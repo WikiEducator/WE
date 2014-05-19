@@ -1,0 +1,34 @@
+.day {
+  fill: #ddd;
+  stroke: #fff;
+}
+
+.q0 {
+  /* fill: #dfdfdf; */
+  fill: #ddd;
+  stroke: #fff;
+}
+.q1 {
+  /* fill: #a7c3df; */
+  fill: #bbb;
+  stroke: #fff;
+}
+.q2 {
+  /* fill: #70a7df; */
+  fill: #999;
+  stroke: #fff;
+}
+.q3 {
+  /* fill: #388bdf; */
+  fill: #777;
+  stroke: #fff;
+}
+.q4 {
+  /* fill: #0070df; */
+  fill: #555;
+  stroke: #fff;
+}
+
+.months {
+}
+
