@@ -22,20 +22,20 @@
         cellPos = 17,
         labelHeight = cellPos,
         labelSize = cellPos * 4;
-    var day = d3.time.format("%w"),
-        week = d3.time.format("%U"),
-        month = d3.time.format("%m"),
-        format = d3.time.format("%Y-%m-%d");
+    var day = d3.time.format("%w");
+
+    function week_diff(d, start) {
+      return Math.floor((d-start)/(7*24*60*60*1000));
+    }
 
     function update(d, start) {
-      var week0 = week(start);
       var color = ['#dfdfdf', '#a7c3df', '#70a7df', '#388bdf', '#0070df'];
       var rect = activity.selectAll(".day")
           .data(d)
         .enter().append("rect")
           .attr("width", cellSize)
           .attr("height", cellSize)
-          .attr("x", function(d) {return (week(d.d)-week0) * cellPos;})
+          .attr("x", function(d) {return week_diff(d.d, start) * cellPos;})
           .attr("y", function(d) {return labelHeight + day(d.d) * cellPos;})
           .style('fill', function(d) {
               return color[Math.round(Math.min(15, d.p.length-0.1)/4)];});
@@ -90,19 +90,17 @@
 
     $('#' + id + ' img').hide();
 
+    // start 6 months in the past
+    //   ("floor"ed to week that contains start of month)
     function startDate(today) {
       var start = new Date(today.toUTCString().replace(/\d\d:.*/,
         '00:00:00 +0000'));
       start.setMonth(start.getMonth() - 6);
       start.setDate(1);
-      console.log('0th day', start);
       start.setDate(start.getDate() - start.getDay());
-      console.log('start', start);
       return start;
     }
 
-    var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var today = new Date();
     var start = startDate(today);
 
@@ -111,22 +109,27 @@
       .attr('width', width)
       .attr('height', height);
 
-    function labels(d, start) {
-      var week0 = week(start);
-      var monthLabels = activity.selectAll(".months")
-          .data(d)
-        .enter().append("text")
+    function labels(start, today) {
+      var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var labelmo = new Date(start);
+      // get the starting month, which is "next" month unless day==1
+      if (labelmo.getDate() > 1) {
+        labelmo.setDate(1);
+        labelmo.setMonth(labelmo.getMonth() + 1);
+      }
+      do {
+        activity.append("text")
           .attr('class', '.months')
           .style('text-anchor', 'left')
-          .attr('transform', function(d, i) {
-              var firstOfMonth = new Date(start);
-              return "translate(" + ((week(new Date(2013, i, 1))-week0)*cellPos) +
-                ', 10)';
-            })
-          .text(function(d) { return d; });
+          .attr('transform', "translate(" + (week_diff(labelmo, start) * cellPos) +
+                ', 10)')
+          .text(monthNames[labelmo.getMonth()]);
+          labelmo.setMonth(labelmo.getMonth() + 1);
+      } while (labelmo <= today);
     }
 
-    labels(monthNames, start);
+    labels(start, today);
 
     showActivity(id, user, start);
   };
