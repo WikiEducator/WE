@@ -82,7 +82,7 @@
         if (d && d['query-continue'] && d['query-continue'].usercontribs) {
           ucstart = d['query-continue'].usercontribs.ucstart;
           if (new Date(ucstart) >= start) {
-            setTimeout(function() {showActivity(id, user, start, ucstart)}, 0);
+            setTimeout(function() {showActivity(id, user, start, ucstart);}, 0);
           }
         }
       });
@@ -92,7 +92,7 @@
 
     function startDate(today) {
       var start = new Date(today.toUTCString().replace(/\d\d:.*/,
-        '00:00:00 +0000'))
+        '00:00:00 +0000'));
       start.setMonth(start.getMonth() - 6);
       start.setDate(1);
       console.log('0th day', start);
@@ -120,8 +120,8 @@
           .style('text-anchor', 'left')
           .attr('transform', function(d, i) {
               var firstOfMonth = new Date(start);
-              return "translate(" + ((week(new Date(2013, i, 1))-week0)*cellPos)
-                + ', 10)';
+              return "translate(" + ((week(new Date(2013, i, 1))-week0)*cellPos) +
+                ', 10)';
             })
           .text(function(d) { return d; });
     }
