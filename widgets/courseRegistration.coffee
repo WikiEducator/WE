@@ -62,7 +62,7 @@ form = [
     "Togo", "Tokelau", "Tonga", "Trinidad and Tobago", "Tunisia",
     "Turkey", "Turkmenistan", "Turks and Caicos Islands", "Tuvalu",
     "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom",
-    "UNESCO", "USA", 
+    "UNESCO", "USA",
     "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela", "Viet Nam",
     "Virgin Islands, British", "Virgin Islands, U.S.", "Wallis and Futuna",
     "Western Sahara", "Yemen", "Zambia", "Zimbabwe"
@@ -136,6 +136,7 @@ formElement = (x) ->
       r += " /><div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
 
 jQuery ->
+  userinfo = {}
   coursePage = ''
 
   fs = """
@@ -341,6 +342,41 @@ jQuery ->
     updateUserDashboard(country)
     return false
 
+  getUserinfo = (success, failure) ->
+    console.log "getUserinfo"
+    api
+      meta: 'userinfo'
+      uiprop: 'email|realname|options'
+      (d) ->
+        console.log "getUserinfo success"
+        if d.query?.userinfo
+          userinfo = d.query.userinfo
+          success()
+      ->
+        console.log "getUserinfo failure"
+        failure()
+
+  prepopulate = ->
+    console.log "prepopulate form"
+    if userinfo.email is ''
+      $('#WEcourseFormLogin').prepend('You <em>must</em> <a href="/Special:Preferences">provide an email address</a> to receive course announcements.<br />')
+    else if not userinfo.emailauthenticated
+      $('#WEcourseFormLogin').prepend('You should <a href="/Special:Preferences">verify your email address</a>.<br />')
+    if userinfo.options['userjs-we-courses'] and userinfo.options['userjs-we-courses'] isnt ""
+      uiCourses = $.parseJSON(userinfo.options['userjs-we-courses'])
+    else
+      uiCourses = {}
+    $('#WEname').val(userinfo.realname)
+    $('#WEcountry').val(userinfo.options?['userjs-we-country'])
+    $('#WEgplus').val(userinfo.options?['userjs-we-gplus'])
+    $('#WEtwitter').val(userinfo.options?['userjs-we-twitter'])
+    $('#WEblog').val(uiCourses[window.weCourse]?.blog);
+
+  removeForm = ->
+    alert("Unable to complete registration now.\nPlease try later.")
+    $('#WEcourseSubmit').remove()
+    return false
+
   if window.wgUserName is null
     if window.weCourseClosed
       $('#WEcourseFormLogin').text(window.weCourseClosed)
@@ -377,29 +413,5 @@ jQuery ->
       $('#WEcourseRegisterSubmit').html('<input id="WEcourseSubmit" type="submit" value="Register" />').click(courseRegister)
     ->
       pass = 1
-  api
-    meta: 'userinfo'
-    uiprop: 'email|realname|options'
-    (d) ->
-      if d.query?.userinfo
-        userinfo = d.query.userinfo
-        if userinfo.email is ''
-          $('#WEcourseFormLogin').prepend('You <em>must</em> <a href="/Special:Preferences">provide an email address</a> to receive course announcements.<br />')
-        else if not userinfo.emailauthenticated
-          $('#WEcourseFormLogin').prepend('You should <a href="/Special:Preferences">verify your email address</a>.<br />')
-        if userinfo.options['userjs-we-courses'] and userinfo.options['userjs-we-courses'] isnt ""
-          uiCourses = $.parseJSON(userinfo.options['userjs-we-courses'])
-        else
-          uiCourses = {}
-      $('#WEname').val(userinfo.realname)
-      $('#WEcountry').val(userinfo.options?['userjs-we-country'])
-      $('#WEgplus').val(userinfo.options?['userjs-we-gplus'])
-      $('#WEtwitter').val(userinfo.options?['userjs-we-twitter'])
-      $('#WEblog').val(uiCourses[window.weCourse]?.blog);
-    ->
-      pass = 2
-    ->
-      alert("Unable to complete registration now.\nPlease try later.")
-      $('#WEcourseSubmit').remove()
-      return false
+  getUserinfo(prepopulate, removeForm)
 
