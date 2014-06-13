@@ -343,21 +343,20 @@ jQuery ->
     return false
 
   getUserinfo = (success, failure) ->
-    console.log "getUserinfo"
     api
       meta: 'userinfo'
       uiprop: 'email|realname|options'
       (d) ->
-        console.log "getUserinfo success"
         if d.query?.userinfo
           userinfo = d.query.userinfo
+          if window.wgUserName is null and ! userinfo.anon?
+            window.wgUserName = userinfo.name
           success()
       ->
-        console.log "getUserinfo failure"
         failure()
 
   prepopulate = ->
-    console.log "prepopulate form"
+    console.log "prepopulate with", userinfo
     if userinfo.email is ''
       $('#WEcourseFormLogin').prepend('You <em>must</em> <a href="/Special:Preferences">provide an email address</a> to receive course announcements.<br />')
     else if not userinfo.emailauthenticated
@@ -373,45 +372,60 @@ jQuery ->
     $('#WEblog').val(uiCourses[window.weCourse]?.blog);
 
   removeForm = ->
+    # something bad happened when trying to get userinfo to build form
     alert("Unable to complete registration now.\nPlease try later.")
     $('#WEcourseSubmit').remove()
     return false
 
-  if window.wgUserName is null
-    if window.weCourseClosed
-      $('#WEcourseFormLogin').text(window.weCourseClosed)
+  showForm = ->
+    if window.wgUserName is null
+      if window.weCourseClosed
+        $('#WEcourseFormLogin').text(window.weCourseClosed)
+        return false
+
+      # FIXME constant returnto that contains a widget that
+      #     bounces you back into the snapshot
+      $('#WEcourseFormLogin').html("You must be <a href=\"/index.php?title=Special:UserLogin&returnto=Practice:OCL4Ed/_Registration\">logged in</a> to register or update your information.")
       return false
+    $('#WEcourseForm').html(fs)
+    $('#WEcourseFormLogin').html("&nbsp;")
+    api
+      prop: 'revisions'
+      rvprop: 'content'
+      titles: "User:#{window.wgUserName}/#{window.weCourse}|MediaWiki:Course-#{window.weCourse}"
+      (d) ->
+        pages = d?.query?.pages
+        for p of pages
+          if pages[p].title.slice(0, 5) is 'User:'
+            if pages[p].hasOwnProperty('missing')
+              if window.weCourseClosed
+                $('#WEcourseForm').html('')
+                $('#WEcourseFormLogin').text(window.weCourseClosed)
+                return false
+            else
+              showUpdateButton()
+              $('#WEcourseFormLogin').append("You are already registered for this course.  <a href=\"/User:#{wgUserName}/#{window.weCourse}\">Go to your course dashboard</a>.")
+              return
+          if pages[p].title.slice(0, 10) is 'MediaWiki:'
+            if pages[p].hasOwnProperty('missing')
+              $('#WEcourseFormLogin').html("Can not read course information.")
+              return
+            else
+              coursePage = "{{:" + pages[p].title + "}}\n\n"
+        #$('#WEcourseFormLogin').html('')
+        $('#WEcourseRegisterSubmit').html('<input id="WEcourseSubmit" type="submit" value="Register" />').click(courseRegister)
+      ->
+        pass = 1
+    if userinfo.realname?
+      console.log "already have userinfo, just prepopulate"
+      prepopulate()
+    else
+      console.log "don't have realname yet, do getUserinfo()"
+      getUserinfo(prepopulate, removeForm)
 
-    $('#WEcourseFormLogin').html("You must be <a href=\"/index.php?title=Special:UserLogin&returnto=#{window.wgPageName}\">logged in</a> to register.")
-    return false
-  $('#WEcourseForm').html(fs)
-  $('#WEcourseFormLogin').html("&nbsp;")
-  api
-    prop: 'revisions'
-    rvprop: 'content'
-    titles: "User:#{window.wgUserName}/#{window.weCourse}|MediaWiki:Course-#{window.weCourse}"
-    (d) ->
-      pages = d?.query?.pages
-      for p of pages
-        if pages[p].title.slice(0, 5) is 'User:'
-          if pages[p].hasOwnProperty('missing')
-            if window.weCourseClosed
-              $('#WEcourseForm').html('')
-              $('#WEcourseFormLogin').text(window.weCourseClosed)
-              return false
-          else
-            showUpdateButton()
-            $('#WEcourseFormLogin').append("You are already registered for this course.  <a href=\"/User:#{wgUserName}/#{window.weCourse}\">Go to your course dashboard</a>.")
-            return
-        if pages[p].title.slice(0, 10) is 'MediaWiki:'
-          if pages[p].hasOwnProperty('missing')
-            $('#WEcourseFormLogin').html("Can not read course information.")
-            return
-          else
-            coursePage = "{{:" + pages[p].title + "}}\n\n"
-      #$('#WEcourseFormLogin').html('')
-      $('#WEcourseRegisterSubmit').html('<input id="WEcourseSubmit" type="submit" value="Register" />').click(courseRegister)
-    ->
-      pass = 1
-  getUserinfo(prepopulate, removeForm)
-
+  if window.wgUserName is null
+    console.log "don't have a wgUserName yet... getUserinfo()"
+    getUserinfo(showForm)
+  else
+    console.log "have wgUserName, just show form"
+    showForm()
