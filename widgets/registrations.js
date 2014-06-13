@@ -83,7 +83,7 @@ function weRegistrations(course, idTotal, idCountries) {
     url: 'http://s.oerfoundation.org/registrations/' + encCourse + '.json',
     dataType: 'jsonp',
     success: function(data) {
-      if (data && data.total && data.countries) {
+      if (data && data.hasOwnProperty('total') && data.hasOwnProperty('countries')) {
         displayValue(idTotal, data.total);
         displayValue(idCountries, data.countries);
       }
