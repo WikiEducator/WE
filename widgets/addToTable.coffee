@@ -34,6 +34,8 @@ form = [
 ]
 formtitle = 'Add to table'
 rform = {}
+autorow = []
+automode = false
 tid = ''
 
 entityMap =
@@ -115,7 +117,7 @@ submitForm = ->
     else
       $es.next().html('&nbsp;')
       rform[element.name] = v
-  #console.log(rform)
+      autorow.push(v)
   if err
     return false
   # hide submit, show spinner
@@ -135,10 +137,14 @@ submitForm = ->
         #console.log('token=', token)
         text = pages[p].revisions[0]['*']
         #console.log(text)
+        if rform.activity
+          summary = "Add #{rform.activity}"
+        else
+          summary = "add item"
         api
           action: 'edit'
           title: window.wgPageName
-          summary: "Add #{rform.activity}"
+          summary: summary
           text: insertRow(text, row)
           token: token
           unwatch: 1
@@ -162,19 +168,22 @@ submitForm = ->
         break
     ->
       pass = 1
-  # make sure the URL starts with https?://
-  url = rform.url
-  if not /^https?:\/\//i.exec(url)
-    url = "http://#{url}"
-  row = []
-  row.push("\n|-")
-  row.push("[[User:#{rform.user}|#{rform.user_name}]]")
-  row.push(rform.activity)
-  row.push("[#{url} #{rform.title}]")
-  row.push(rform.comment)
+  if automode
+    row = autorow.slice(0)
+    row.unshift("\n|-")
+  else
+    row = []
+    row.push("\n|-")
+    # make sure the URL starts with https?://
+    url = rform.url
+    if not /^https?:\/\//i.exec(url)
+      url = "http://#{url}"
+    row.push("[[User:#{rform.user}|#{rform.user_name}]]")
+    row.push(rform.activity)
+    row.push("[#{url} #{rform.title}]")
+    row.push(rform.comment)
   row.push("\n");
   row = row.join("\n|")
-  #console.log('row', row)
   # find table
   # insert row
   # save
@@ -221,6 +230,20 @@ weAddToTable = (id, options) ->
     $did.find('a').text(login)
     return false
   tid = id
+  if options.auto
+    automode = true
+    form = []
+    $("##{id}").find("th").each ->
+      heading = $(this).text().replace(/[\n\t \xA0]/g, '');
+      type = 'text'
+      if heading.indexOf('*') > -1
+        heading = heading.replace(/[*]/g, '')
+        type = 'textarea'
+      formitem =
+        name: escape(heading)
+        label: escape(heading)
+        type: type
+      form.push(formitem)
   $('body').append("""
   <div id="weAddToResourceBankDialog" style="display:none;">
     <form id="fweAddToResourceBank#{id}">
