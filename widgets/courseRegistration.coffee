@@ -356,7 +356,6 @@ jQuery ->
         failure()
 
   prepopulate = ->
-    console.log "prepopulate with", userinfo
     if userinfo.email is ''
       $('#WEcourseFormLogin').prepend('You <em>must</em> <a href="/Special:Preferences">provide an email address</a> to receive course announcements.<br />')
     else if not userinfo.emailauthenticated
@@ -385,7 +384,7 @@ jQuery ->
 
       # FIXME constant returnto that contains a widget that
       #     bounces you back into the snapshot
-      $('#WEcourseFormLogin').html("You must be <a href=\"/index.php?title=Special:UserLogin&returnto=Practice:OCL4Ed/_Registration\">logged in</a> to register or update your information.")
+      $('#WEcourseFormLogin').html("You must be <a id=\"WEcourseFormGoLogin\" href=\"/index.php?title=Special:UserLogin&returnto=Practice:OCL4Ed/_Registration\">logged in</a> to register or update your information.")
       return false
     $('#WEcourseForm').html(fs)
     $('#WEcourseFormLogin').html("&nbsp;")
@@ -417,15 +416,11 @@ jQuery ->
       ->
         pass = 1
     if userinfo.realname?
-      console.log "already have userinfo, just prepopulate"
       prepopulate()
     else
-      console.log "don't have realname yet, do getUserinfo()"
       getUserinfo(prepopulate, removeForm)
 
   if window.wgUserName is null
-    console.log "don't have a wgUserName yet... getUserinfo()"
     getUserinfo(showForm)
   else
-    console.log "have wgUserName, just show form"
     showForm()
