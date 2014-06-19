@@ -18,4 +18,5 @@ options.json
 tools/docopt
 # ignore Javascript built from CoffeeScript
 courseRegistration.js
+addToTable.js
 
