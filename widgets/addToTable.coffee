@@ -217,7 +217,7 @@ weAddToTable = (id, options) ->
     $did.append("<button></button>")
     $did.find('button').text(button)
   else
-    $did.html('<a href="http://wikieducator.org/index.php?title=Special:UserLogin&returnto=#{window.wgPageName}"></a>');
+    $did.html("<a href=\"http://wikieducator.org/index.php?title=Special:UserLogin&returnto=#{window.wgPageName}\"></a>");
     $did.find('a').text(login)
     return false
   tid = id
