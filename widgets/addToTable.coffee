@@ -36,6 +36,7 @@ formtitle = 'Add to table'
 rform = {}
 autorow = []
 automode = false
+bottom = false
 tid = ''
 
 entityMap =
@@ -96,7 +97,10 @@ abridge = (text) ->
   return text
 
 insertRow = (text, row) ->
-  p = text.indexOf('|-', text.indexOf('id="#{tid}"'))
+  if bottom
+    p = text.indexOf('|}', text.indexOf('id="#{tid}"'))
+  else
+    p = text.indexOf('|-', text.indexOf('id="#{tid}"'))
   if p > 0
     start = text.slice(0, p-1)
     end = text.slice(p)
