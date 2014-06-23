@@ -200,14 +200,9 @@ submitForm = ->
   return false
 
 showForm = ->
-  ###
-  if window.wgUserName is null
-    alert("You must be logged in to WikiEducator to add an entry")
-    return false
-  ###
   $('#weAddToTableDialog').dialog(
-    height: 400
-    width: 680
+    height: 'auto'
+    width: 'auto'
     title: escapeHTML(formtitle)
     show: 'slow')
   getUserName()
@@ -230,6 +225,8 @@ weAddToTable = (id, options) ->
   login = options.login || 'Login to add to the table'
   button = options.button || 'Add to table'
   formtitle = options.formtitle || 'Add to table'
+  dialogWidth = options.width || 600
+  dialogHeight = options.width || 400
   $did = $("#b#{id}")
   if window.wgUserName
     $did.append("<button></button>")
