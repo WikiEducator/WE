@@ -62,10 +62,10 @@ api = (data, success, failure) ->
     failure: failure
   )
 
-formElement = (x) ->
-  r = "<td class=\"mw-label\"><label for=\"WErb#{x.name}\">#{x.label}</label></td>"
+formElement = (x, ix) ->
+  r = "<td class=\"mw-label\"><label for=\"WErb#{ix}\">#{x.label}</label></td>"
 
-  ni = "name=\"WErb#{x.name}\" id=\"WErb#{x.name}\""
+  ni = "name=\"WErb#{ix}\" id=\"WErb#{ix}\""
   switch x.type
     when "select"
       r += '<td class="mw-input"><select ' + ni + '>'
@@ -111,8 +111,9 @@ insertRow = (text, row) ->
 
 submitForm = ->
   err = false
+  ix = 0
   for element in form
-    $es = $("#WErb#{element.name}")
+    $es = $("#WErb#{ix}")
     v = $.trim($es.val())
     #console.log(element.name, v)
     if element.req and v is ""
@@ -122,10 +123,11 @@ submitForm = ->
       $es.next().html('&nbsp;')
       rform[element.name] = v
       autorow.push(v)
+    ix++
   if err
     return false
   # hide submit, show spinner
-  $('#weAddToResourceBankSubmit').hide()
+  $('#weAddToTableSubmit').hide()
   $('#WErbSpinner').show()
   # request page and edit token
   api
@@ -156,9 +158,10 @@ submitForm = ->
             #console.log('saved!')
             window.location = "#{window.wgServer}/#{window.wgPageName}?1"
           ->
-            alert("Unable to save resource.  Please try later.")
+            alert("Unable to save row.  Please try later.")
             window.location = "#{window.wgServer}/#{window.wgPageName}?1"
-        comment = abridge(rform.comment)
+        if rform.comment
+          comment = abridge(rform.comment)
         ###
         api
           action: 'wenotes'
@@ -173,6 +176,7 @@ submitForm = ->
     ->
       pass = 1
   if automode
+    console.log('autorow', autorow);
     row = autorow.slice(0)
     row.unshift("\n|-")
   else
@@ -186,8 +190,9 @@ submitForm = ->
     row.push(rform.activity)
     row.push("[#{url} #{rform.title}]")
     row.push(rform.comment)
-  row.push("\n");
-  row = row.join("\n|")
+    row.push("\n")
+  row = row.join("\n|") + "\n";
+  console.log('row=', row)
   # find table
   # insert row
   # save
@@ -200,7 +205,7 @@ showForm = ->
     alert("You must be logged in to WikiEducator to add an entry")
     return false
   ###
-  $('#weAddToResourceBankDialog').dialog(
+  $('#weAddToTableDialog').dialog(
     height: 400
     width: 680
     title: escapeHTML(formtitle)
@@ -234,39 +239,46 @@ weAddToTable = (id, options) ->
     $did.find('a').text(login)
     return false
   tid = id
+  if options.bottom
+    bottom = true
   if options.auto
     automode = true
     form = []
     $("##{id}").find("th").each ->
-      heading = $(this).text().replace(/[\n\t \xA0]/g, '');
+      heading = $(this).text()
+        .replace(/[\n\t\xA0]/g, ' ')
+      heading = $.trim(heading);
       type = 'text'
       if heading.indexOf('*') > -1
         heading = heading.replace(/[*]/g, '')
         type = 'textarea'
       formitem =
         name: escape(heading)
-        label: escape(heading)
+        label: escapeHTML(heading)
         type: type
       form.push(formitem)
   $('body').append("""
-  <div id="weAddToResourceBankDialog" style="display:none;">
-    <form id="fweAddToResourceBank#{id}">
+  <div id="weAddToTableDialog" style="display:none;">
+    <form id="fweAddToTable#{id}">
       <table></table>
     </form>
   </div>
   """)
+  console.log form
+  ix = 0;
   for element in form
-    do (element) ->
-      $("#weAddToResourceBankDialog > form > table").append('<tr>' +
-        formElement(element) + "</tr>\n");
-  $('#weAddToResourceBankDialog > form > table').append('''
+    do (element, ix) ->
+      $("#weAddToTableDialog > form > table").append('<tr>' +
+        formElement(element, ix) + "</tr>\n");
+    ix++
+  $('#weAddToTableDialog > form > table').append('''
   <tr><td>&nbsp;</td>
     <td><img id="WErbSpinner" src="/skins/common/images/Ajax-loader.gif"
           height=16 width=16 style="display: none" /><button
-          id="weAddToResourceBankSubmit">Submit</button></td></tr>
+          id="weAddToTableSubmit">Submit</button></td></tr>
   ''')
   $did.find('button').click(showForm)
-  $('#weAddToResourceBankSubmit').click(submitForm)
+  $('#weAddToTableSubmit').click(submitForm)
   return false
 
 jQuery ->
