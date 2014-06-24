@@ -80,8 +80,16 @@ formElement = (x, ix) ->
         r += ">#{text}</option>"
       r += "</select>
             <div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
+    when "radio"
+      r += '<td class="mw-input">'
+      iy = 0
+      for o in x.options
+        checked = if iy is 0 then 'checked' else ''
+        r += "<input type=\"radio\" #{ni} value=\"#{o}\" #{checked}>#{o}&nbsp;&nbsp;&nbsp;"
+        iy++
+      r += "<div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
     when "textarea"
-      r += "<td class=\"mw-input\"><textarea #{ni} rows=2 cols=40></textarea><div style=\"font-size:smaller;\">#{x.note||'&nbsp;'}</div></td>"
+      r += "<td class=\"mw-input\"><textarea #{ni} rows=3 cols=40></textarea><div style=\"font-size:smaller;\">#{x.note||'&nbsp;'}</div></td>"
     else
       r += "<td class=\"mw-input\"><input #{ni} type=\"text\" size=\"40\""
       r += ' disabled="disabled"' if x.disabled
@@ -110,6 +118,7 @@ insertRow = (text, row) ->
   return ''
 
 submitForm = ->
+  columnsummary = ''
   err = false
   ix = 0
   for element in form
@@ -123,6 +132,8 @@ submitForm = ->
       $es.next().html('&nbsp;')
       rform[element.name] = v
       autorow.push(v)
+      if element.summary
+        columnsummary = v
     ix++
   if err
     return false
@@ -146,7 +157,10 @@ submitForm = ->
         if rform.activity
           summary = "Add #{rform.activity}"
         else
-          summary = "add item"
+          if columnsummary
+            summary = "add #{columnsummary}"
+          else
+            summary = "add item"
         api
           action: 'edit'
           title: window.wgPageName
@@ -221,6 +235,65 @@ getUserName = ->
         rform.user_name = userinfo.realname
         #console.log(rform.user_name)
 
+parseColumns = (id, columns) ->
+  columns = columns.split(';')
+  console.log 'columns', columns
+  form = []
+  $("##{id}").find('th').each (i) ->
+    # set up defaults based on table headings
+    heading = $(this).text()
+      .replace(/[\n\t\xA0]/g, ' ')
+    heading = $.trim(heading)
+    type = 'text'
+    if heading.indexOf('*') > -1
+      heading = heading.replace(/[*]/g, '')
+      type = 'textarea'
+
+    opts = []
+    # merge in overrides from columns
+    if i < columns.length and columns[i]
+      note = ''
+      console.log(i, columns[i])
+      cparams = columns[i].split('&')
+      console.log('cparams', cparams)
+      for cparam in cparams
+        pp = cparam.split('=', 2)
+        console.log('pp', pp)
+        if pp.length is 1
+          pp.push('')         # default arg
+        ptype = $.trim(pp[0].toLowerCase())
+        parg = $.trim(pp[1])
+        console.log(ptype, '=', parg)
+        switch ptype
+          when 'type'
+            switch parg
+              when 'text' then type = 'text'
+              when 'textarea' then type = 'textarea'
+              when 'select' then type = 'select'
+              when 'radio' then type = 'radio'
+              else type = 'text'  # default type
+          when 'label'
+            heading = parg
+          when 'options'
+            opts = parg.split('!')
+            opts = ($.trim(opt).replace(/[^ a-zA-Z0-9]/g, '') for opt in opts)
+            console.log('opts', opts)
+          when 'summary'
+            summary = true
+          when 'note'
+            note = escapeHTML(parg)
+    formitem =
+      name: escape(heading)
+      label: escapeHTML(heading)
+      type: type
+      options: opts
+    formitem.summary = true if summary
+    formitem.note = note if note
+
+    form.push(formitem)
+    console.log form
+  return form
+
 weAddToTable = (id, options) ->
   login = options.login || 'Login to add to the table'
   button = options.button || 'Add to table'
@@ -238,7 +311,10 @@ weAddToTable = (id, options) ->
   tid = id
   if options.bottom
     bottom = true
-  if options.auto
+  if options.columns
+    form = parseColumns(id, options.columns)
+    automode = true
+  else if options.auto
     automode = true
     form = []
     $("##{id}").find("th").each ->
