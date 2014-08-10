@@ -210,15 +210,17 @@ submitForm = ->
       $es.next().html('&nbsp;')
       switch element.type
         when 'flagc'
-          if flags.hasOwnProperty(v)
-            v = "{{FlagC|#{flags[v]}|#{v}}}"
-          else:
-            v = "{{FlagC|#{v}}}"
+          if v isnt ""
+            if flags.hasOwnProperty(v)
+              v = "{{FlagC|#{flags[v]}|#{v}}}"
+            else:
+              v = "{{FlagC|#{v}}}"
         when 'flagcl'
-          if flags.hasOwnProperty(v)
-            v = "{{FlagCL|#{flags[v]}|#{v}}}"
-          else:
-            v = "{{FlagCL|#{v}}}"
+          if v isnt ""
+            if flags.hasOwnProperty(v)
+              v = "{{FlagCL|#{flags[v]}|#{v}}}"
+            else:
+              v = "{{FlagCL|#{v}}}"
       rform[element.name] = v
       autorow.push(v)
       if element.summary
