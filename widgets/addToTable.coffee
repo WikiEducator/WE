@@ -190,8 +190,6 @@ insertRow = (text, row) ->
   if p > 0
     start = text.slice(0, p-1)
     end = text.slice(p)
-    #console.log("start:", start)
-    #console.log("end:", end)
     return start + row + end
   return ''
 
@@ -202,13 +200,14 @@ submitForm = ->
   for element in form
     $es = $("#WErb#{ix}")
     v = $.trim($es.val())
-    #console.log(element.name, v)
     if element.req and v is ""
       $es.next().text(element.err).css('color', 'FireBrick')
       err = true
     else
       $es.next().html('&nbsp;')
       switch element.type
+        when 'userpage'
+          v = "[[User:#{wgUserName}|#{v}]]"
         when 'flagc'
           if v isnt ""
             if flags.hasOwnProperty(v)
@@ -309,10 +308,17 @@ showForm = ->
     title: escapeHTML(formtitle)
     show: 'slow')
   getUserName()
+  dt = new Date()
+  ds = "#{dt.getUTCFullYear()}-#{('0'+(dt.getUTCMonth()+1)).slice(-2)}-#{('0'+dt.getUTCDate()).slice(-2)} #{('0'+dt.getUTCHours()).slice(-2)}:#{('0'+dt.getUTCMinutes()).slice(-2)}"
+  for x in form
+    nd = "#WErb#{x.ix}"
+    switch x.type
+      when "user" then $(nd).val(wgUserName)
+      when "date" then $(nd).val(ds.slice(0, 11))
+      when "timestamp" then $(nd).val(ds)
   return false
 
 getUserName = ->
-  #console.log('API request for realname')
   rform.user = window.wgUserName
   api
     meta: 'userinfo'
@@ -322,7 +328,9 @@ getUserName = ->
       if d.query?.userinfo
         userinfo = d.query.userinfo
         rform.user_name = userinfo.realname
-        #console.log(rform.user_name)
+        for x in form
+          if x.type is "name" or x.type is "userpage"
+            $("#WErb#{x.ix}").val(userinfo.realname)
 
 parseColumns = (id, columns) ->
   columns = columns.split(';')
@@ -351,6 +359,11 @@ parseColumns = (id, columns) ->
         switch ptype
           when 'type'
             switch parg
+              when 'user' then type = 'user'
+              when 'name' then type = 'name'
+              when 'userpage' then type = 'userpage'
+              when 'date' then type = 'date'
+              when 'timestamp' then type = 'timestamp'
               when 'text' then type = 'text'
               when 'textarea' then type = 'textarea'
               when 'select' then type = 'select'
@@ -427,6 +440,7 @@ weAddToTable = (id, options) ->
     do (element, ix) ->
       $("#weAddToTableDialog > form > table").append('<tr>' +
         formElement(element, ix) + "</tr>\n");
+        element.ix = ix
     ix++
   $('#weAddToTableDialog > form > table').append('''
   <tr><td>&nbsp;</td>
