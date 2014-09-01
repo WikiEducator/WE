@@ -43,19 +43,30 @@
         .text(function(d) {return d.p.join("\n");});
     }
 
-    function showActivity(id, user, start, ucstart) {
+    function tsToDateString(ts) {
+      /* don't rely on ISO-8601 support from ECMAScript 5 */
+      var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+          mno = parseInt(ts.slice(4, 6), 10);
+      return ts.slice(6, 8) + ' ' + months[mno-1] + ' ' +
+        ts.slice(0, 4);
+    }
+
+    function showActivity(id, user, start, dcontinue) {
       var uc = {
         list: 'usercontribs',
         ucuser: user || wgUserName,
         uclimit: 500,
-        ucprop: 'timestamp|title|flags'
+        ucprop: 'timestamp|title|flags',
+        continue: ''
       };
-      if (ucstart) {
-        uc.ucstart = ucstart;
+      if (dcontinue) {
+        uc.continue = dcontinue.continue;
+        uc.uccontinue = dcontinue.uccontinue;
       }
       API(uc, function(d) {
         var data = {};
-        var i, uc, ucl, dt, idate;
+        var i, uc, ucl, dt, idate, cdate;
         if (d && d.query && d.query.usercontribs) {
           uc = d.query.usercontribs;
           ucl = uc.length;
@@ -79,10 +90,11 @@
           adata.push({d: new Date(i), p: data[i]});
         }
         update(adata, start);
-        if (d && d['query-continue'] && d['query-continue'].usercontribs) {
-          ucstart = d['query-continue'].usercontribs.ucstart;
-          if (new Date(ucstart) >= start) {
-            setTimeout(function() {showActivity(id, user, start, ucstart);}, 0);
+        if (d && d.continue ) {
+          dcontinue = d.continue;
+          cdate = new Date(tsToDateString(dcontinue.uccontinue.split('|')[0]));
+          if (cdate >= start) {
+            setTimeout(function() {showActivity(id, user, start, dcontinue);}, 0);
           }
         }
       });
