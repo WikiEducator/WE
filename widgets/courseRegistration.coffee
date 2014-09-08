@@ -163,7 +163,7 @@ jQuery ->
   fs += """
         <tr>
           <td class="mw-label">&nbsp;</td>
-          <td class="mw-input"><img id="WEcourseSpinner" src="/skins/common/images/Ajax-loader.gif" height=16 width=16 style="display: none" /><div id="WEcourseRegisterSubmit"></div></td>
+          <td class="mw-input"><img id="WEcourseSpinner" src="/skins/common/images/ajax-loader.gif" height=16 width=16 style="display: none" /><div id="WEcourseRegisterSubmit"></div></td>
           </tr>
       </table>
     </form>

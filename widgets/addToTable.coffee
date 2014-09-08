@@ -444,7 +444,7 @@ weAddToTable = (id, options) ->
     ix++
   $('#weAddToTableDialog > form > table').append('''
   <tr><td>&nbsp;</td>
-    <td><img id="WErbSpinner" src="/skins/common/images/Ajax-loader.gif"
+    <td><img id="WErbSpinner" src="/skins/common/images/ajax-loader.gif"
           height=16 width=16 style="display: none" /><button
           id="weAddToTableSubmit">Submit</button></td></tr>
   ''')
