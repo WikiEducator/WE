@@ -209,8 +209,15 @@ jQuery ->
       changes.push('userjs-we-courses=' + JSON.stringify(uiCourses).replace(/\|/g, ''))
     if changes.length isnt 0
       api
-        action: 'weoptions'
-        change: changes.join('|')
+        action: 'tokens'
+        type: 'options'
+        (d) ->
+          token = d?.tokens?.optionstoken
+          api
+            action: 'options'
+            change: changes.join('|')
+            token: token
+            (d) ->
 
   createUserDashboard = (country) ->
     api
