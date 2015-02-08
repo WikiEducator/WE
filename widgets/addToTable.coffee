@@ -184,9 +184,9 @@ abridge = (text) ->
 
 insertRow = (text, row) ->
   if bottom
-    p = text.indexOf('|}', text.indexOf('id="#{tid}"'))
+    p = text.indexOf('|}', text.indexOf("id=\"#{tid}\""))
   else
-    p = text.indexOf('|-', text.indexOf('id="#{tid}"'))
+    p = text.indexOf('|-', text.indexOf("id=\"#{tid}\""))
   if p > 0
     start = text.slice(0, p-1)
     end = text.slice(p)
