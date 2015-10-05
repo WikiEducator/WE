@@ -25,10 +25,7 @@
     var day = d3.time.format("%w");
 
     function week_diff(d, start) {
-      var x = Math.floor((d-start)/(7*24*60*60*1000));
-      if (day(d) == 0) {
-        x = x + 1;
-      }
+      var x = Math.floor((d-start)/(7*24*60*60*1000)+0.01);
       return x;
     }
 
@@ -87,11 +84,11 @@
         // convert to array;
         var adata = [];
         for (i in data) {
-          idate = new Date(i);
+          idate = new Date(i + 'T00:00:00.000Z');
           if (idate < start) {
             break;
           }
-          adata.push({d: new Date(i), p: data[i]});
+          adata.push({d: idate, p: data[i]});
         }
         update(adata, start);
         if (d && d.continue ) {
