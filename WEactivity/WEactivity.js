@@ -25,7 +25,11 @@
     var day = d3.time.format("%w");
 
     function week_diff(d, start) {
-      return Math.floor((d-start)/(7*24*60*60*1000));
+      var x = Math.floor((d-start)/(7*24*60*60*1000));
+      if (day(d) == 0) {
+        x = x + 1;
+      }
+      return x;
     }
 
     function update(d, start) {
