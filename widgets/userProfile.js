@@ -72,7 +72,9 @@
     "Brunei Darussalam": "Brunei",
     "Korea, Republic of": "South Korea",
     "Netherlands": "the Netherlands",
-    "United Arab Emirates": "the United Arab Emirates"
+    "United Arab Emirates": "the United Arab Emirates",
+    "Micronesia, Federated States of": "the Federated States of Micronesia",
+    "Palestinian Territory": "Palistine"
   };
 
   escapeHTML = function(s) {
