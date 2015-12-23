@@ -159,15 +159,23 @@ formElement = (x, ix) ->
       r += "</select>
             <div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
     when "radio"
-      r += '<td class="mw-input">'
+      r += "<td class=\"mw-input\"><radiogroup>"
       iy = 0
       for o in x.options
         checked = if iy is 0 then 'checked' else ''
-        r += "<input type=\"radio\" #{ni} value=\"#{o}\" #{checked}>#{o}&nbsp;&nbsp;&nbsp;"
+        r += "<input type=\"radio\" name=\"WErb#{ix}\" value=\"#{o}\" #{checked}>#{o}&nbsp;&nbsp;&nbsp;"
         iy++
-      r += "<div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
+      r += "</radiogroup><div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
+    when "color"
+      r += "<td class=\"mw-input\"><input #{ni} type=\"color\" size=\"40\""
+      r += ' disabled="disabled"' if x.disabled
+      r += " /><div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
     when "textarea"
       r += "<td class=\"mw-input\"><textarea #{ni} rows=3 cols=40></textarea><div style=\"font-size:smaller;\">#{x.note||'&nbsp;'}</div></td>"
+    when "textdate"
+      r += "<td class=\"mw-input\"><input class=\"WEdatepicker\" #{ni} type=\"text\" size=\"40\""
+      r += ' disabled="disabled"' if x.disabled
+      r += " /><div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
     else
       r += "<td class=\"mw-input\"><input #{ni} type=\"text\" size=\"40\""
       r += ' disabled="disabled"' if x.disabled
@@ -220,6 +228,8 @@ submitForm = ->
               v = "{{FlagCL|#{flags[v]}|#{v}}}"
             else:
               v = "{{FlagCL|#{v}}}"
+        when 'radio'
+          v = $("input[name=\"WErb#{ix}\"]:checked").val()
       rform[element.name] = v
       autorow.push(v)
       if element.summary
@@ -316,6 +326,7 @@ showForm = ->
       when "user" then $(nd).val(wgUserName)
       when "date" then $(nd).val(ds.slice(0, 11))
       when "timestamp" then $(nd).val(ds)
+  $('.WEdatepicker').datepicker({dateFormat: 'yy-mm-dd'})
   return false
 
 getUserName = ->
@@ -366,11 +377,13 @@ parseColumns = (id, columns) ->
               when 'timestamp' then type = 'timestamp'
               when 'text' then type = 'text'
               when 'textarea' then type = 'textarea'
+              when 'textdate' then type = 'textdate'
               when 'select' then type = 'select'
               when 'country' then type = 'country'
               when 'flagc', 'FlagC' then type = 'flagc'
               when 'flagcl', 'FlagCL' then type = 'flagcl'
               when 'radio' then type = 'radio'
+              when 'color' then type = 'color'
               else type = 'text'  # default type
           when 'label'
             heading = parg
@@ -454,5 +467,6 @@ weAddToTable = (id, options) ->
 
 jQuery ->
   window.weAddToTable = weAddToTable
+  #$('head').append('<style>.ui-datepicker {z-index: 9999;}</style>')
   return
 
