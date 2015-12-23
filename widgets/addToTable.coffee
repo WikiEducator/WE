@@ -111,6 +111,7 @@ countries = [
 flags =
   "Bahamas": "the Bahamas"
   "Brunei Darussalam": "Brunei"
+  "Holy See": "the Vatican City"
   "Korea, Republic of": "South Korea"
   "Netherlands": "the Netherlands"
   "United Arab Emirates": "the United Arab Emirates"
