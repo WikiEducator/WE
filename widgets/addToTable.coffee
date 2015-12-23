@@ -119,6 +119,10 @@ escapeHTML = (s) ->
   return String(s).replace(/[&<>"'\/]/g, (s) ->
     entityMap[s])
 
+isColor = (s) ->
+  return false if (s.length != 4) and (s.length != 7)
+  return s.search(/^#[0-9a-fA-F]+$/) > -1
+
 api = (data, success, failure) ->
   data.action ||= 'query'
   data.format ||= 'json'
@@ -159,11 +163,19 @@ formElement = (x, ix) ->
       r += "</select>
             <div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
     when "radio"
+      # not all browsers support reduce, so do it by hand
+      allColors = true
+      allColors &= isColor(o) for o in x.options
       r += "<td class=\"mw-input\"><radiogroup>"
       iy = 0
       for o in x.options
         checked = if iy is 0 then 'checked' else ''
-        r += "<input type=\"radio\" name=\"WErb#{ix}\" value=\"#{o}\" #{checked}>#{o}&nbsp;&nbsp;&nbsp;"
+        r += "<label><input type=\"radio\" name=\"WErb#{ix}\" value=\"#{o}\" #{checked}>"
+        if allColors
+          r += "<span style=\"background-color:#{o}; border-radius: 4px; border: 1px solid black;\">&nbsp;&nbsp;&nbsp;</span>"
+        else
+          r += o
+        r += "&nbsp;&nbsp;</label>"
         iy++
       r += "</radiogroup><div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
     when "color"
@@ -389,7 +401,7 @@ parseColumns = (id, columns) ->
             heading = parg
           when 'options'
             opts = parg.split('!')
-            opts = ($.trim(opt).replace(/[^ a-zA-Z0-9]/g, '') for opt in opts)
+            opts = ($.trim(opt).replace(/[^-_ #a-zA-Z0-9]/g, '') for opt in opts)
           when 'summary'
             summary = true
           when 'note'
