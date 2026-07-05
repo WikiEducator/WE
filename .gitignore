@@ -1,0 +1,13 @@
+# Mac debris
+.DS_Store
+
+# editor debris
+*~
+*.bak
+*.swap
+.vscode/
+
+# tools
+.env
+node_modules
+log.txt

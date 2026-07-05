@@ -1,0 +1,89 @@
+<html>
+<head>
+  <title>YouTube</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+</head>
+<body>
+<script type="text/javascript">/*<![CDATA[*/
+$(function() {
+  $('.weYouTube').each(function() {
+    var id = $(this).data('ytid');
+    console.log('id', id);
+    var img = $(this).data('img');
+    if (!img) {
+      // mark it as in flight
+      $(this).data('img', '#');
+      $.ajax({
+        url: 'https://www.googleapis.com/youtube/v3/videos?id=' + id + '&key=AIzaSyAQtYcfsqifV0XF_tLADxUeyUdlgqY65Tg&part=snippet,status,contentDetails,player,statistics'
+      }).done(function(d) {
+        var $did, img;
+        console.log(id, d);
+        console.log(d.items);
+        console.log(d.items[0]);
+        if (d && d.items && d.items.length === 1 && d.items[0].status) {
+          if (d.items[0].status.license === 'creativeCommon') {
+            // find appropriate thumbnail
+            if (d.items[0].snippet && d.items[0].snippet.thumbnails) {
+              console.log('look for', d.items[0].id);
+              $did = $('div[data-ytid="' + d.items[0].id + '"]');
+              console.log('found', $did.length);
+              img = d.items[0].snippet.thumbnails.high.url;
+              $did.find('img').attr('src', img);
+              if (d.items[0].snippet.title) {
+                $did.find('span').html(d.items[0].snippet.title + '<br>Play on YouTube &#x25b6;');
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+  /*
+  var inIframe = false;
+  $(window).focus();
+  $('iframe').mouseenter(function() {
+    inIframe = true;
+  }).mouseleave(function () {
+    inIframe = false;
+  });
+  $(window).blur(function () {
+    if (inIframe) {
+      console.log('go to YouTube');
+      window.location = 'http://www.youtube.com/watch?v=oUGKqEkp-UI';
+    }
+  });
+  */
+});
+/*]]>*/</script>
+<h2>Wiki created view (non CC-BY)</h2>
+<div style="height:360px;"><div class="weYouTube" data-ytid="cnW2O2R0U-Q" style="position:relative;">
+<a href="http://www.youtube.com/watch?v=cnW2O2R0U-Q">
+  <img src="/extensions/WE/images/clear1x1.gif" height="360" width="480" style="background:url(/extensions/WE/images/black1x1.gif); position: absolute;"></a>
+  <span style="color: white; background: black; padding: 0.5em; position: absolute; top: 10px; font: 14px sans-serif;">Play on YouTube &#x25b6;</span>
+</div>
+</div>
+
+<h2>Wiki created view</h2>
+<div style="height:360px;"><div class="weYouTube" data-ytid="oUGKqEkp-UI" style="position:relative;">
+<a href="http://www.youtube.com/watch?v=oUGKqEkp-UI">
+  <img src="/extensions/WE/images/clear1x1.gif" height="360" width="480" style="background:url(/extensions/WE/images/black1x1.gif); position: absolute;"></a>
+  <span style="color: white; background: black; padding: 0.5em; position: absolute; top: 10px; font: 14px sans-serif;">Play on YouTube &#x25b6;</span>
+</div>
+</div>
+
+<h2>Embedded player (modest branding, no controls)</h2>
+<a href="http://www.youtube.com/watch?v=cnW2O2R0U-Q">
+  <iframe width="560" height="315" src="//www.youtube.com/embed/cnW2O2R0U-Q?rel=0&modestbranding=1&controls=2" frameborder="0" allowfullscreen></iframe></a>
+
+<h2>Embedded player (no controls)</h2>
+<a href="http://www.youtube.com/watch?v=cnW2O2R0U-Q">
+  <iframe width="560" height="315" src="//www.youtube.com/embed/cnW2O2R0U-Q?rel=0&controls=2" frameborder="0" allowfullscreen></iframe></a>
+<h2>Embedded player (modest branding)</h2>
+<a href="http://www.youtube.com/watch?v=cnW2O2R0U-Q">
+  <iframe width="560" height="315" src="//www.youtube.com/embed/cnW2O2R0U-Q?rel=0&modestbranding=1" frameborder="0" allowfullscreen></iframe></a>
+
+<h2>Embedded player</h2>
+<a href="http://www.youtube.com/watch?v=cnW2O2R0U-Q">
+  <iframe width="560" height="315" src="//www.youtube.com/embed/cnW2O2R0U-Q?rel=0" frameborder="0" allowfullscreen></iframe></a>
+</body>
+</html>

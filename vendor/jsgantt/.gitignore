@@ -1,0 +1,18 @@
+# compiled python
+*.py[co]
+build
+build-stamp
+# editor debris
+*~
+.#*
+._*
+.*.sw?
+# OS debris
+.DS_Store
+# ignore temp/state files
+.netrwhist
+#
+node_modules
+# don't save the compressed version
+jsgantt-min.js
+
