@@ -2,7 +2,7 @@
   var jQueryUI = 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js',
       jQueryUICSS = 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/smoothness/jquery-ui.css';
 
-  var weAPI = wgServer + '/api.php';
+  var weAPI = mw.config.get('wgServer') + '/api.php';
 
   function mwAPI(data, success, failure) {
     if (!data.hasOwnProperty('format')) {
@@ -52,7 +52,7 @@
             rawtitle = rawtitle.substring(rawtitle.indexOf(':')+1);
           }
           console.log(rawtitle);
-          collectionCall('AddArticle', [wgNamespaceNumber, rawtitle, 0]);
+          collectionCall('AddArticle', [mw.config.get('wgNamespaceNumber'), rawtitle, 0]);
           
           $('#WEbookmakerList').append('<li>' + allpages[page].title + '</li>');
         } else {
@@ -83,15 +83,15 @@
       width: 600,
       height: 400
     });
-    collectionCall('AddArticle', [wgNamespaceNumber, wgTitle, 0]);
-    canonicalPagePrefix = ((wgNamespaceNumber > 0) ? wgCanonicalNamespace + ':' : '') + wgTitle;
+    collectionCall('AddArticle', [mw.config.get('wgNamespaceNumber'), mw.config.get('wgTitle'), 0]);
+    canonicalPagePrefix = ((mw.config.get('wgNamespaceNumber') > 0) ? mw.config.get('wgCanonicalNamespace') + ':' : '') + mw.config.get('wgTitle');
     $('#WEbookmakerList').append('<li>' + canonicalPagePrefix + '</li>');
     canonicalPagePrefix += '/';
     options = {
       action: 'query',
       list: 'allpages',
-      apnamespace: wgNamespaceNumber,
-      apprefix: wgTitle + '/',
+      apnamespace: mw.config.get('wgNamespaceNumber'),
+      apprefix: mw.config.get('wgTitle') + '/',
       apfilterredir: 'nonredirects',
       aplimit: 10
     };

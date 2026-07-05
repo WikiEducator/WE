@@ -5,7 +5,7 @@ $(function() {
     data.action || (data.action = 'query');
     data.format || (data.format = 'json');
     return $.ajax({
-      url: window.wgServer + '/api.php',
+      url: mw.config.get('wgServer') + '/api.php',
       type: 'POST',
       data: data,
       success: success,
@@ -25,13 +25,13 @@ $(function() {
     getText = API({
         prop: 'revisions',
         rvprop: 'content',
-        titles: wgPageName
+        titles: mw.config.get('wgPageName')
     });
     // get a promise of an edit token
     getToken = API({
         prop: 'info',
         intoken: 'edit',
-        titles: wgPageName
+        titles: mw.config.get('wgPageName')
     });
 
     weUnc = $.trim($('#weUnc').val());
@@ -81,9 +81,9 @@ $(function() {
           token: token,
           summary: 'add a new uncertainty',
           text: text,
-          title: wgPageName
+          title: mw.config.get('wgPageName')
         }, function() {
-          window.location.replace(wgServer + '/' + wgPageName + '?weToken=' + Math.random());
+          window.location.replace(mw.config.get('wgServer') + '/' + mw.config.get('wgPageName') + '?weToken=' + Math.random());
         });
       })
       .fail(function() {
@@ -93,7 +93,7 @@ $(function() {
   }
 
   // if not logged in, you can't add things
-  if (!wgUserName) {
+  if (!mw.config.get('wgUserName')) {
     $('#weAddUncertainty').attr('disabled', 'disabled');
     return;
   }

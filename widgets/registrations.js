@@ -1,5 +1,4 @@
 function weRegistrations(course, idTotal, idCountries) {
-  "use strict";
   var encCourse,
       wFCount = 0;
 

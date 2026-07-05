@@ -1,5 +1,5 @@
 (function () {
-  var weAPI = wgServer + '/api.php',
+  var weAPI = mw.config.get('wgServer') + '/api.php',
       delids = [],
       deltimestamps = [],
       restoretimestamps = [],
@@ -54,7 +54,7 @@
     }
     if (data.hasOwnProperty('query-continue')) {
       log('we must continue: ', data['query-continue'].revisions.rvstartid);
-      getRevs(wgPageName, data['query-continue'].revisions.rvstartid);
+      getRevs(mw.config.get('wgPageName'), data['query-continue'].revisions.rvstartid);
     } else {
       log('Total revisions to restore: ' + restoretimestamps.length);
       log('Restore: ' + restoretimestamps.join(' '));
@@ -68,7 +68,7 @@
         format: 'json',
         prop: 'revisions',
         rvprop: 'ids|timestamp',
-        titles: wgPageName,
+        titles: mw.config.get('wgPageName'),
         rvlimit: 500,
         rvstartid: rvcontinue || Math.pow(2, 53)
       },
@@ -98,7 +98,7 @@
       log('leaving ' + restoretimestamps.length);
       mwAPI({
           action: 'undelete',
-          title: wgPageName,
+          title: mw.config.get('wgPageName'),
           token: deltoken,
           reason: 'restore after spam removal',
           timestamps: thisUndelete.join('|')
@@ -120,7 +120,7 @@
         action: 'query',
         prop: 'info',
         format: 'json',
-        titles: wgPageName,
+        titles: mw.config.get('wgPageName'),
         intoken: 'delete'
       },
       function(d) {
@@ -133,11 +133,11 @@
           }
           log(deltoken);
 
-          getRevs(wgPageName);
+          getRevs(mw.config.get('wgPageName'));
           // delete the page
           mwAPI({
               action: 'delete',
-              title: wgPageName,
+              title: mw.config.get('wgPageName'),
               token: deltoken,
               reason: 'removing spam revision(s)'
             }, undeleteRevs);

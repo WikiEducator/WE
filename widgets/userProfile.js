@@ -87,7 +87,7 @@
     data.action || (data.action = 'query');
     data.format || (data.format = 'json');
     return $.ajax({
-      url: window.wgServer + '/api.php',
+      url: mw.config.get('wgServer') + '/api.php',
       type: 'POST',
       data: data,
       success: success,
@@ -194,7 +194,7 @@
         $es.next().html('&nbsp;');
         switch (element.type) {
           case 'userpage':
-            v = "[[User:" + wgUserName + "|" + v + "]]";
+            v = "[[User:" + mw.config.get('wgUserName') + "|" + v + "]]";
             break;
           case 'flagc':
             if (v !== "") {
@@ -233,7 +233,7 @@
       prop: 'info|revisions',
       intoken: 'edit',
       rvprop: 'content',
-      titles: window.wgPageName
+      titles: mw.config.get('wgPageName')
     }, function(d) {
       var comment, p, pages, token, _ref, _results;
       pages = d != null ? (_ref = d.query) != null ? _ref.pages : void 0 : void 0;
@@ -242,12 +242,12 @@
         token = pages[p].edittoken;
         api({
           action: 'edit',
-          title: window.wgPageName,
+          title: mw.config.get('wgPageName'),
           summary: 'create user profile',
           text: userProfile(rform),
           token: token
         }, function(d) {
-          return window.location = "" + window.wgServer + "/" + window.wgPageName + "?1";
+          return window.location = "" + mw.config.get('wgServer') + "/" + mw.config.get('wgPageName') + "?1";
         }, function(d) {
           return alert("Unable to save profile.  Please try later.");
         });
@@ -308,7 +308,7 @@
       nd = "#WErb" + x.ix;
       switch (x.type) {
         case "user":
-          $(nd).val(wgUserName);
+          $(nd).val(mw.config.get('wgUserName'));
           break;
         case "date":
           $(nd).val(ds.slice(0, 11));
@@ -322,7 +322,7 @@
   };
 
   getUserName = function() {
-    rform.user = window.wgUserName;
+    rform.user = mw.config.get('wgUserName');
     return api({
       meta: 'userinfo',
       uiprop: 'realname'

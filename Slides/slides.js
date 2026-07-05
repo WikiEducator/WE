@@ -233,7 +233,7 @@ function buildNextItem() {
 };
 
 function exitSlide() {
-  window.location = wgServer + '/' + wgPageName;
+  window.location = mw.config.get('wgServer') + '/' + mw.config.get('wgPageName');
   return false;
 };
 
@@ -584,10 +584,10 @@ function handleBodyKeyDown(event) {
 
     case 27: // Esc
       $('body').empty();  // fast feedback that something is happening
-      //console.log('window.location=' + wgServer + '/' + wgPageName);
+      //console.log('window.location=' + mw.config.get('wgServer') + '/' + mw.config.get('wgPageName'));
       // try delaying this call to see if Firefox honors it this way
       setTimeout(function() {
-        window.location = wgServer + '/' + wgPageName;
+        window.location = mw.config.get('wgServer') + '/' + mw.config.get('wgPageName');
         return false;
         }, 100);
       break;
@@ -646,7 +646,7 @@ function addGeneralStyle() {
   el.href = PERMANENT_URL_PREFIX + 'styles.css';
   document.body.appendChild(el);
   */
-  var href = wgServer + '/extensions/WE/Slides/slides.css?q=' + Math.random();
+  var href = mw.config.get('wgServer') + '/extensions/WE/Slides/slides.css?q=' + Math.random();
   $('head').append('<link rel="stylesheet" type="text/css" href="' + href + '" />');
 
   /*

@@ -7,7 +7,7 @@ $(function() {
     data.action || (data.action = 'query');
     data.format || (data.format = 'json');
     $.ajax({
-      url: window.wgServer + '/api.php',
+      url: mw.config.get('wgServer') + '/api.php',
       type: 'POST',
       data: data,
       success: success,
@@ -15,14 +15,14 @@ $(function() {
     });
   }
 
-  console.log("blogURL", wgUserName, wgTitle);
-  if (wgUserName == wgTitle.split('/')[0]) {
+  console.log("blogURL", mw.config.get('wgUserName'), mw.config.get('wgTitle'));
+  if (mw.config.get('wgUserName') == mw.config.get('wgTitle').split('/')[0]) {
     //console.log('my course dashboard');
     $('a#Blog').next().after('<br /><form action="#"><label for="blogURL">Update Blog URL:</label>&nbsp;&nbsp;<input type="text" id="blogURL" name="blogURL" size="60" /><input type="submit" value="Update" id="weUBU"/><img id="weUBSpinner" src="/skins/common/images/ajax-loader.gif" height=16 width=16 style="display: none" /></form>');
   }
   // get the current URL and populate the form
   API({
-    titles: wgPageName,
+    titles: mw.config.get('wgPageName'),
     prop: 'revisions',
     rvprop: 'content'
   }, function(d) {
@@ -48,7 +48,7 @@ $(function() {
   API({
     prop: 'info',
     intoken: 'edit',
-    titles: wgPageName
+    titles: mw.config.get('wgPageName')
   }, function(d) {
     var i;
     //console.log(d);
@@ -76,9 +76,9 @@ $(function() {
         token: token,
         summary: 'updated Blog URL',
         text: text,
-        title: wgPageName
+        title: mw.config.get('wgPageName')
       }, function() {
-        window.location.replace(wgServer + '/' + wgPageName + '?weToken=' + Math.random());
+        window.location.replace(mw.config.get('wgServer') + '/' + mw.config.get('wgPageName') + '?weToken=' + Math.random());
       });
     }
     return false;

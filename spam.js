@@ -4,7 +4,7 @@
   var bad = [],
       allbadusers = ['Frieda', 'NawlinWiki'];
   var nneedreview = 0;
-  var weAPI = wgServer + '/api.php';
+  var weAPI = mw.config.get('wgServer') + '/api.php';
   var NEWBIE = 20;
   var NEWMSECS = 7*24*60*60*1000;
 
@@ -189,7 +189,7 @@
       users = d.query.users;
       usersLen = users.length;
       // detect enhanced RecentChanges
-      if (wgCanonicalSpecialPageName === 'Recentchanges') {
+      if (mw.config.get('wgCanonicalSpecialPageName') === 'Recentchanges') {
         hideParent = $('.mw-userlink').parent()
           .prop('tagName').toLowerCase();
         if (hideParent !== 'li') {
@@ -214,7 +214,7 @@
     }
   }
 
-  if (wgCanonicalSpecialPageName === 'Newpages') {
+  if (mw.config.get('wgCanonicalSpecialPageName') === 'Newpages') {
     $('#bodyContent form')
       .first()
       .after('<div id="spamdiv" style="background-color:LightGreen; padding: 10px;"><b>SpamBot</b><div id="spamusers"><br /><br /></div><ul id="spamreview"></ul></div>');

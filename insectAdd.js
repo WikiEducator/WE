@@ -1,10 +1,9 @@
 //
 (function () {
-  "use strict";
   var jQueryUIURL = 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js',
       jQueryUICSSURL = 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/smoothness/jquery-ui.css';
   var rc, flag = '', flagurl = '';
-  var weAPI = wgServer + '/api.php';
+  var weAPI = mw.config.get('wgServer') + '/api.php';
 
   function escapeWikitext(s) {
     // FIXME allow templates within the textarea?
@@ -108,7 +107,7 @@
       }
       data += "}}\n";
       // load the wikitext and an edit token
-      var weAPI = wgServer + '/api.php';
+      var weAPI = mw.config.get('wgServer') + '/api.php';
       $.ajax({
         type: 'POST',
         url: weAPI,
@@ -116,7 +115,7 @@
           action: 'query',
           prop: 'info|revisions',
           intoken: 'edit',
-          titles: wgPageName,
+          titles: mw.config.get('wgPageName'),
           rvprop: 'content',
           format: 'json'
         },
@@ -136,7 +135,7 @@
             url: weAPI,
             data: {
               action: 'edit',
-              title: wgPageName,
+              title: mw.config.get('wgPageName'),
               summary: 'added ' + name,
               text: wikitext.replace('{{#widget:InsectAdd}}',
                 data + "\n{{#widget:InsectAdd}}"),
@@ -157,7 +156,7 @@
     });
   }
   var addButton = '';
-  if (wgUserName !== null) {
+  if (mw.config.get('wgUserName') !== null) {
     addButton = '<input type="submit" class="weAddInsectButton" value="Add an Insect" />';
   }
   $('.weInsectAdd').append(addButton);

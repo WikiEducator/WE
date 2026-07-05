@@ -1,7 +1,6 @@
 //
 (function () {
-  "use strict";
-  var weAPI = wgServer + '/api.php';
+  var weAPI = mw.config.get('wgServer') + '/api.php';
 
   function escapeWikitext(s) {
     // FIXME allow templates within the textarea?
@@ -162,7 +161,7 @@
         watchlist: 'watch'
         }, function (d) {
           $('#weDialog').dialog('close');
-          window.location = wgServer + '/' + encodeURIComponent(normName);
+          window.location = mw.config.get('wgServer') + '/' + encodeURIComponent(normName);
         }, function(hdr, stat, err) {
           alert("Unable to save new insect!\n" + stat);
         });
@@ -170,7 +169,7 @@
   }
   var addButton = '<input type="submit" ' +
     'value="You must be logged in to add an insect" disabled="disabled">';
-  if (wgUserName !== null) {
+  if (mw.config.get('wgUserName') !== null) {
     addButton = '<input type="submit" class="weAddInsectButton" ' +
       'value="Add an Insect" />';
   }
