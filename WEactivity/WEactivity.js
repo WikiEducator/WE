@@ -6,7 +6,7 @@
     data.action || (data.action = 'query');
     data.format || (data.format = 'json');
     return $.ajax({
-      url: window.wgServer + '/api.php',
+      url: mw.config.get('wgServer') + '/api.php',
       type: 'POST',
       data: data,
       success: success,
@@ -56,7 +56,7 @@
     function showActivity(id, user, start, dcontinue) {
       var uc = {
         list: 'usercontribs',
-        ucuser: user || wgUserName,
+        ucuser: user || mw.config.get('wgUserName'),
         uclimit: 500,
         ucprop: 'timestamp|title|flags',
         continue: ''
