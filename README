@@ -1,0 +1,27 @@
+# WE
+
+A catchall repository of files used on WikiEducator,
+especially JavaScript files used in the Widgets. It
+is easier to edit them in the filesystem than in the
+wiki's textareas.
+
+## Vendored Libraries
+
+The repository contains vendored libraries.
+
+### jsgantt
+
+A version of (jsGantt project)[https://code.google.com/p/jsgantt]
+which was copyright 2009 Shlomy Gantz BlueBrick Inc. released
+under the Modified BSD License.
+
+### FlexSlider
+
+Version 2.6.1 of (FlexSlider)[http://www.woothemes.com/flexslider/]
+which was released under GPLv2.
+
+### jQuery.popover
+
+Version 1.1.2 of jQuery.popover is Copyright 2012 Davey
+IJzermans, released under the MIT License.
+
