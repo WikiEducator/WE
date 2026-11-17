@@ -52,26 +52,26 @@
         }
       }
     }
-    if (data.hasOwnProperty('query-continue')) {
-      log('we must continue: ', data['query-continue'].revisions.rvstartid);
-      getRevs(mw.config.get('wgPageName'), data['query-continue'].revisions.rvstartid);
+    if (data.continue && data.continue.rvcontinue) {
+      log('we must continue: ', data.continue.rvcontinue);
+      getRevs(mw.config.get('wgPageName'), data.continue);
     } else {
       log('Total revisions to restore: ' + restoretimestamps.length);
       log('Restore: ' + restoretimestamps.join(' '));
     }
   }
 
-  function getRevs(title, rvcontinue){
-    log('getRevs()', title, rvcontinue);
-    mwAPI({
+  // cont is the 'continue' object from the previous batch, if any
+  function getRevs(title, cont){
+    log('getRevs()', title, cont);
+    mwAPI($.extend({
         action: 'query',
         format: 'json',
         prop: 'revisions',
         rvprop: 'ids|timestamp',
         titles: mw.config.get('wgPageName'),
-        rvlimit: 500,
-        rvstartid: rvcontinue || Math.pow(2, 53)
-      },
+        rvlimit: 'max'
+      }, cont || {continue: ''}),
       processRevs);
   }
 
@@ -91,6 +91,10 @@
   }
 
   function undeleteRevs() {
+    if (restoretimestamps.length === 0) {
+      blockBadUsers();
+      return;
+    }
     // restore the good revisions in chunks of 500
     while (restoretimestamps.length > 0) {
       var thisUndelete = restoretimestamps.splice(0, Math.min(500, restoretimestamps.length));
@@ -115,22 +119,15 @@
 
   function weDeleteRevs() {
     log('weDeleteRevs');
-    // get a deletion token
+    // get a CSRF token (used for delete, undelete and block)
     mwAPI({
         action: 'query',
-        prop: 'info',
         format: 'json',
-        titles: mw.config.get('wgPageName'),
-        intoken: 'delete'
+        meta: 'tokens'
       },
       function(d) {
-        if (d.query && d.query.pages) {
-          for (var i in d.query.pages) {
-            if (d.query.pages.hasOwnProperty(i)) {
-              deltoken = d.query.pages[i].deletetoken;
-              break;
-            }
-          }
+        if (d.query && d.query.tokens && d.query.tokens.csrftoken) {
+          deltoken = d.query.tokens.csrftoken;
           log(deltoken);
 
           getRevs(mw.config.get('wgPageName'));

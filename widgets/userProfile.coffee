@@ -138,6 +138,8 @@ flags =
   "Korea, Republic of": "South Korea"
   "Netherlands": "the Netherlands"
   "United Arab Emirates": "the United Arab Emirates"
+  "Micronesia, Federated States of": "the Federated States of Micronesia"
+  "Palestinian Territory": "Palistine"
 
 escapeHTML = (s) ->
   return String(s).replace(/[&<>"'\/]/g, (s) ->
@@ -147,11 +149,11 @@ api = (data, success, failure) ->
   data.action ||= 'query'
   data.format ||= 'json'
   $.ajax(
-    url: window.wgServer + '/api.php'
+    url: mw.config.get('wgServer') + '/api.php'
     type: 'POST'
     data: data
     success: success
-    failure: failure
+    error: failure
   )
 
 formElement = (x, ix) ->
@@ -226,7 +228,7 @@ submitForm = ->
       $es.next().html('&nbsp;')
       switch element.type
         when 'userpage'
-          v = "[[User:#{wgUserName}|#{v}]]"
+          v = "[[User:#{mw.config.get('wgUserName')}|#{v}]]"
         when 'flagc'
           if v isnt ""
             if flags.hasOwnProperty(v)
@@ -249,31 +251,31 @@ submitForm = ->
   # hide submit, show spinner
   $('#weAddUserProfile').hide()
   $('#WErbSpinner').show()
-  # request page and edit token
+  # request page and edit (csrf) token
   api
-    prop: 'info|revisions'
-    intoken: 'edit'
+    prop: 'revisions'
+    meta: 'tokens'
     rvprop: 'content'
-    titles: window.wgPageName
+    titles: mw.config.get('wgPageName')
     (d) ->
       #console.log(d)
+      token = d?.query?.tokens?.csrftoken
       pages = d?.query?.pages
       for p of pages
-        token = pages[p].edittoken
         #console.log('token=', token)
         api
           action: 'edit'
-          title: window.wgPageName
+          title: mw.config.get('wgPageName')
           summary: 'create user profile'
           text: userProfile(rform)
           token: token
           (d) ->
             #console.log('saved!')
-            window.location = "#{window.wgServer}/#{window.wgPageName}?1"
+            window.location = "#{mw.config.get('wgServer')}/#{mw.config.get('wgPageName')}?1"
           (d) ->
             #console.log('unable to save')
             alert("Unable to save profile.  Please try later.")
-            #window.location = "#{window.wgServer}/#{window.wgPageName}?1"
+            #window.location = "#{mw.config.get('wgServer')}/#{mw.config.get('wgPageName')}?1"
         if rform.comment
           comment = abridge(rform.comment)
         ###
@@ -294,7 +296,7 @@ submitForm = ->
   # make sure the URL starts with https?://
   url = rform.url
   if not /^https?:\/\//i.exec(url)
-    url = "http://#{url}"
+    url = "https://#{url}"
   row.push("[[User:#{rform.user}|#{rform.user_name}]]")
   row.push(rform.activity)
   row.push("[#{url} #{rform.title}]")
@@ -323,14 +325,14 @@ showForm = ->
   for x in form
     nd = "#WErb#{x.ix}"
     switch x.type
-      when "user" then $(nd).val(wgUserName)
+      when "user" then $(nd).val(mw.config.get('wgUserName'))
       when "date" then $(nd).val(ds.slice(0, 11))
       when "timestamp" then $(nd).val(ds)
   $('#fweUserProfile .mw-input').css('padding-bottom', '2ex')
   return false
 
 getUserName = ->
-  rform.user = window.wgUserName
+  rform.user = mw.config.get('wgUserName')
   api
     meta: 'userinfo'
     uiprop: 'realname'
@@ -364,15 +366,18 @@ weUserProfile = () ->
     ix++
   $('#weUserProfileDialog > form > table').append('''
   <tr><td>&nbsp;</td>
-    <td><img id="WErbSpinner" src="/skins/common/images/ajax-loader.gif"
-          height=16 width=16 style="display: none" /><button
+    <td><span id="WErbSpinner" style="display: none"></span><button
           id="weAddUserProfile">Submit</button></td></tr>
   ''')
+  $('#WErbSpinner').append($.createSpinner(size: 'small', type: 'inline'))
   showForm()
   $('#weAddUserProfile').click(submitForm)
   return false
 
-jQuery ->
-  window.weUserProfile = weUserProfile
-  return
+# defined immediately (not on document ready) so that the gadget's
+# $.getScript() callback can call it; dialog/spinner are loaded on demand
+window.weUserProfile = ->
+  mw.loader.using(['jquery.ui', 'jquery.spinner']).then ->
+    weUserProfile()
+  return false
 

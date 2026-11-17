@@ -105,7 +105,7 @@ Graph.Layout.Mindmap.prototype = {
 
 function weMindmap(f, divid, width, height) {
   var g = new Graph();
-  var weAPI = wgServer + '/api.php';
+  var weAPI = mw.config.get('wgServer') + '/api.php';
   var n = 0;
 
   function bareRender(r, n) {

@@ -1,4 +1,5 @@
-$(function() {
+(function () {
+function main($) {
   var form;
 
   function API(data, success, failure) {
@@ -29,9 +30,7 @@ $(function() {
     });
     // get a promise of an edit token
     getToken = API({
-        prop: 'info',
-        intoken: 'edit',
-        titles: mw.config.get('wgPageName')
+        meta: 'tokens'
     });
 
     weUnc = $.trim($('#weUnc').val());
@@ -65,12 +64,8 @@ $(function() {
           }
         }
         // extract the token
-        if (tkd && tkd.query && tkd.query.pages) {
-          for (i in tkd.query.pages) {
-            if (i > 0) {
-              token = tkd.query.pages[i].edittoken;
-            }
-          }
+        if (tkd && tkd.query && tkd.query.tokens) {
+          token = tkd.query.tokens.csrftoken;
         }
 
         // insert at the last </ol>
@@ -107,15 +102,26 @@ $(function() {
   form += '  <label for="weUncNo" style="font-weight: bold;">No:</label>';
   form += '    <textarea name="weUncNo" id="weUncNo" cols="50"></textarea>';
   form += '</div>';
-  form += '<input type="submit" value="Submit" id="weUncSub" name="weUncSub" /><img id="weAddUncSpinner" src="/skins/common/images/Ajax-loader.gif" height=16 width=16 style="display: none;" />';
+  form += '<input type="submit" value="Submit" id="weUncSub" name="weUncSub" /><span id="weAddUncSpinner" style="display: none;"></span>';
   form += '</form>';
 
   $('#weAddUncertainty').click(function() {
     $('#weAddUncertainty').hide('fast').after(form);
+    mw.loader.using('jquery.spinner').then(function () {
+      $('#weAddUncSpinner').append($.createSpinner({ size: 'small' }));
+    });
     $('#weUncForm').show('slow');
     $('#weUncSub').click(addUncertainty);
     return false;
   });
   
   return;
-});
+}
+// MediaWiki >= 1.27 loads mw/jQuery asynchronously and runs RLQ when ready;
+// older versions have them loaded before the page body
+if (window.jQuery && window.mw) {
+  jQuery(main);
+} else {
+  (window.RLQ = window.RLQ || []).push(function () { jQuery(main); });
+}
+}());

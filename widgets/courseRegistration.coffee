@@ -101,15 +101,25 @@ api = (data, success, failure) ->
   data.action ||= 'query'
   data.format ||= 'json'
   $.ajax(
-    url: window.wgServer + '/api.php'
+    url: mw.config.get('wgServer') + '/api.php'
     type: 'POST'
     data: data
     success: success
-    failure: failure
+    error: failure
   )
+
+# get a csrf token (also valid for action=options), then call success(token)
+withToken = (success, failure) ->
+  api
+    meta: 'tokens'
+    (d) ->
+      success(d?.query?.tokens?.csrftoken)
+    failure
 
 userinfo = {}
 uiCourses = {}
+# may be updated from userinfo if the page was served from an anonymous cache
+wgUserName = null
 
 formElement = (x) ->
   r = "<td class=\"mw-label\"><label for=\"WE#{x.name}\">#{x.label}</label></td>"
@@ -136,7 +146,8 @@ formElement = (x) ->
       r += ' disabled="disabled"' if x.disabled
       r += " /><div style=\"font-size: smaller;\">#{x.note||'&nbsp;'}</div></td>"
 
-jQuery ->
+main = ->
+  wgUserName = mw.config.get('wgUserName')
   userinfo = {}
   coursePage = ''
 
@@ -163,7 +174,7 @@ jQuery ->
   fs += """
         <tr>
           <td class="mw-label">&nbsp;</td>
-          <td class="mw-input"><img id="WEcourseSpinner" src="/skins/common/images/ajax-loader.gif" height=16 width=16 style="display: none" /><div id="WEcourseRegisterSubmit"></div></td>
+          <td class="mw-input"><span id="WEcourseSpinner" style="display: none"></span><div id="WEcourseRegisterSubmit"></div></td>
           </tr>
       </table>
     </form>
@@ -200,32 +211,24 @@ jQuery ->
       if th isnt ""
         if not /https?:/.test(th)
           if th.charAt(0) is '/'
-            th = "http:/#{th}"
+            th = "https:/#{th}"
           else
-            th = "http://#{th}"
+            th = "https://#{th}"
         uiCourses[window.weCourse].blog = th
         saveCourses = true
     if saveCourses
       changes.push('userjs-we-courses=' + JSON.stringify(uiCourses).replace(/\|/g, ''))
     if changes.length isnt 0
-      api
-        action: 'tokens'
-        type: 'options'
-        (d) ->
-          token = d?.tokens?.optionstoken
-          api
-            action: 'options'
-            change: changes.join('|')
-            token: token
-            (d) ->
+      withToken (token) ->
+        api
+          action: 'options'
+          change: changes.join('|')
+          token: token
+          (d) ->
 
   createUserDashboard = (country) ->
-    api
-      prop: 'info'
-      titles: "User:#{wgUserName}/#{window.weCourse}"
-      intoken: 'edit'
-      (d) ->
-        token = d?.query?.pages[-1].edittoken
+    withToken(
+      (token) ->
         text = coursePage
         if 'blog' in addfields
           text += "\n\n{{CourseBlog|1=" + $('#WEblog').val() + "}}"
@@ -251,6 +254,7 @@ jQuery ->
             $('#WEcourseFormLogin').append("Registration failed.  Please try again later.  Sorry for the inconvenience")
       ->
         $('#WEcourseFormLogin').append("Registration failed.  Please try again later.  Sorry for the inconvenience")
+    )
     return false
 
   updateUserDashboard = (country) ->
@@ -265,15 +269,7 @@ jQuery ->
             if i>0
               text = d.query.pages[i].revisions[0]['*']
         if text
-          api
-            prop: 'info'
-            titles: "User:#{wgUserName}/#{window.weCourse}"
-            intoken: 'edit'
-            (d) ->
-              pages = d?.query?.pages
-              for pg,v of pages
-                break
-              token = v['edittoken']
+          withToken (token) ->
               if 'blog' in addfields
                 blogurl = $.trim($('#WEblog').val())
                 text = text.replace(/{{CourseBlog\|[^}]*}}/, "{{CourseBlog|1=#{blogurl}}}")
@@ -306,15 +302,7 @@ jQuery ->
             if i>0
               text = d.query.pages[i].revisions[0]['*']
         if text
-          api
-            prop: 'info'
-            titles: "User:#{wgUserName}/#{window.weCourse}"
-            intoken: 'edit'
-            (d) ->
-              pages = d?.query?.pages
-              for pg,v of pages
-                break
-              token = v['edittoken']
+          withToken (token) ->
               text = text.replace(/\[\[Category:.*Participant]]/, '')
               summary = "#{window.weCourse} unsubscription"
               api
@@ -357,8 +345,8 @@ jQuery ->
       (d) ->
         if d.query?.userinfo
           userinfo = d.query.userinfo
-          if window.wgUserName is null and ! userinfo.anon?
-            window.wgUserName = userinfo.name
+          if wgUserName is null and ! userinfo.anon?
+            wgUserName = userinfo.name
           success()
       ->
         failure()
@@ -369,7 +357,7 @@ jQuery ->
     else if not userinfo.emailauthenticated
       $('#WEcourseFormLogin').prepend('You should <a href="/Special:Preferences">verify your email address</a>.<br />')
     if userinfo.options['userjs-we-courses'] and userinfo.options['userjs-we-courses'] isnt ""
-      uiCourses = $.parseJSON(userinfo.options['userjs-we-courses'])
+      uiCourses = JSON.parse(userinfo.options['userjs-we-courses'])
     else
       uiCourses = {}
     $('#WEname').val(userinfo.realname)
@@ -385,7 +373,7 @@ jQuery ->
     return false
 
   showForm = ->
-    if window.wgUserName is null
+    if wgUserName is null
       if window.weCourseClosed
         $('#WEcourseFormLogin').text(window.weCourseClosed)
         return false
@@ -395,11 +383,12 @@ jQuery ->
       $('#WEcourseFormLogin').html("You must be <a id=\"WEcourseFormGoLogin\" href=\"/index.php?title=Special:UserLogin&returnto=Practice:OCL4Ed/_Registration\">logged in</a> to register or update your information.")
       return false
     $('#WEcourseForm').html(fs)
+    $('#WEcourseSpinner').append($.createSpinner(size: 'small', type: 'inline'))
     $('#WEcourseFormLogin').html("&nbsp;")
     api
       prop: 'revisions'
       rvprop: 'content'
-      titles: "User:#{window.wgUserName}/#{window.weCourse}|MediaWiki:Course-#{window.weCourse}"
+      titles: "User:#{wgUserName}/#{window.weCourse}|MediaWiki:Course-#{window.weCourse}"
       (d) ->
         pages = d?.query?.pages
         for p of pages
@@ -428,7 +417,13 @@ jQuery ->
     else
       getUserinfo(prepopulate, removeForm)
 
-  if window.wgUserName is null
+  if wgUserName is null
     getUserinfo(showForm)
   else
     showForm()
+
+# This script is loaded by a plain <script> tag in the page body, which
+# runs before ResourceLoader has loaded jQuery and mw, so queue the start-up.
+(window.RLQ = window.RLQ || []).push ->
+  mw.loader.using(['jquery.spinner']).then ->
+    jQuery(main)

@@ -8,27 +8,21 @@
   var NEWBIE = 20;
   var NEWMSECS = 7*24*60*60*1000;
 
-  function weSpamGetToken(title) {
+  // CSRF token, used for both delete and block
+  function weSpamGetToken() {
     var token = '';
     $.ajax({
       url: weAPI,
       data: {
         action: 'query',
         format: 'json',
-        prop: 'info',
-        titles: title,
-        intoken: 'delete'
+        meta: 'tokens'
       },
       async: false,
       dataType: 'json',
       type: 'POST',
       success: function(data) {
-        var page, pages;
-        pages = data.query.pages;
-        for (page in pages) {
-          token = pages[page].deletetoken;
-          break;
-        }
+        token = (data && data.query && data.query.tokens && data.query.tokens.csrftoken) || '';
       }
     });
     return token;
@@ -115,7 +109,7 @@
           bad.push({"page": pages[i].title});
         }
         if (token === '') {
-          token = weSpamGetToken('Main_Page');
+          token = weSpamGetToken();
         }
         $.ajax({
           url: weAPI,
